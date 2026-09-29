@@ -34,6 +34,6 @@ test('the page links the manifest and its CSP allows it', async () => {
 });
 
 test('the app registers the service worker by a relative URL', async () => {
-  // Pages serves the site under /datetime-tab/, so '/sw.js' would 404.
+  // Pages serves the site under /datetimetab/, so '/sw.js' would 404.
   assert.match(await read('app.js'), /serviceWorker\.register\('\.\/sw\.js'\)/);
 });

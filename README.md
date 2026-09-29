@@ -9,7 +9,7 @@ format, and the link carries it, so a bookmark or pinned tab is the whole
 setup, and you can send it to someone else. Pinned tabs hide the title, so
 the tab icon shows today's date as well.
 
-### → [maxwinterstein.github.io/datetime-tab](https://maxwinterstein.github.io/datetime-tab/)
+### → [maxwinterstein.github.io/datetimetab](https://maxwinterstein.github.io/datetimetab/)
 
 A single static page: no framework, no build step, no tracking, no cookies,
 no ads. Your settings stay in your browser. Install it as an app and it works

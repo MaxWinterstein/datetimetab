@@ -8,7 +8,7 @@
   "author": "Max Winterstein",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MaxWinterstein/datetime-tab.git"
+    "url": "git+https://github.com/MaxWinterstein/datetimetab.git"
   },
   "engines": {
     "node": ">=22"

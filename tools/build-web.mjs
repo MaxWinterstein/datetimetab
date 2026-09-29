@@ -74,7 +74,7 @@ export async function findUnresolved(dir) {
       // Root-absolute paths break on GitHub Pages, where the site lives under
       // /<repo>/ rather than at the domain root.
       if (ref.startsWith('/')) {
-        missing.push(`${file} -> ${ref} (root-absolute, breaks under /datetime-tab/ on Pages)`);
+        missing.push(`${file} -> ${ref} (root-absolute, breaks under /datetimetab/ on Pages)`);
         continue;
       }
       checked++;

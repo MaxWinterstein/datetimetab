@@ -19,7 +19,7 @@ else — the preview, the settings UI — exists to serve that.
   `.vibepod/README.md` for Playwright).
 - **Node 22+** (`.nvmrc`; `mise.toml` pins the same for mise users). Tests use `node:test` and `node:assert/strict`.
 - **Relative paths only** in `web/`. The site is published under
-  `/datetime-tab/` on GitHub Pages, so `/app.js` would 404 there. `task build`
+  `/datetimetab/` on GitHub Pages, so `/app.js` would 404 there. `task build`
   rejects root-absolute references.
 - **Comments explain why**, not what. If a decision was not obvious, write
   down the reason next to it.
