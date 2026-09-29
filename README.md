@@ -153,8 +153,9 @@ overlay. What keeps it honest:
 - GitHub Actions are pinned to **commit SHAs** (a test enforces it).
 - Versions that must match (Biome in `package.json` and `biome.jsonc`; task and
   prek in `mise.toml` and the overlay) are updated **in one PR**.
-- **Major updates**, and any update to the three Pages deploy actions, which
-  no pull request can exercise, wait for a human.
+- **Major updates**, any update to the three Pages deploy actions, which no
+  pull request can exercise, and to `gh` in the overlay, which holds GitHub
+  credentials, wait for a human.
 
 ## Deployment
 

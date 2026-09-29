@@ -23,6 +23,11 @@
       "automerge": false
     },
     {
+      "description": "gh holds GitHub credentials inside the vibepod pod. CI can only check that a new release starts, not what it does once authenticated, so a person looks at every update.",
+      "matchPackageNames": ["cli/cli"],
+      "automerge": false
+    },
+    {
       "description": "Biome's version lives in package.json and in the biome.jsonc $schema URL; test/docs.test.mjs fails unless both move together.",
       "matchPackageNames": ["@biomejs/biome", "biomejs/biome"],
       "groupName": "biome"
