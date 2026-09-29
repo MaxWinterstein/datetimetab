@@ -19,7 +19,8 @@ Your settings stay in your browser.
   tokens (`HH:mm:ss`, `ddd D MMM`, …). The page shows a large live preview and
   a mock tab strip, so you can see where a long title gets cut off.
 - **Language, time zone, 12/24 h, seconds, prefix/suffix** — all adjustable.
-- **A clock-face favicon** that shows the current time, refreshed every minute.
+- **A calendar-page favicon** showing today's day of the month (in the chosen
+  time zone), so even a pinned tab with no title text still shows the date.
 - **Remembers your choice** in `localStorage` and can be **shared as a link**
   (*Copy link*); *Reset* returns to the defaults.
 - **Keeps running without a network** once open — nothing is fetched after

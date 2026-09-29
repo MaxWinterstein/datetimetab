@@ -3,7 +3,7 @@
  * form. All formatting logic lives in format.js so it can be tested without
  * a DOM; this file only reads inputs, writes outputs and schedules ticks.
  */
-import { clockFaviconUrl } from './favicon.js';
+import { dateFaviconUrl } from './favicon.js';
 import {
   CUSTOM,
   canonicalLocale,
@@ -287,14 +287,16 @@ function isPrefixOfOption(listId, text) {
 /* ------------------------------------------------------------------------ */
 
 let lastTitle = '';
-let lastIconMinute = '';
+let lastIconDay = '';
 
 function renderFavicon(now) {
-  const { hour, minute } = wallClock(now, settings.tz || undefined);
-  const key = `${hour}:${minute}`;
-  if (key === lastIconMinute) return;
-  lastIconMinute = key;
-  const url = clockFaviconUrl(hour, minute);
+  // Keyed on the day (and zone, via wallClock) so the data URL is only
+  // rebuilt when the date on the page actually changes.
+  const { day } = wallClock(now, settings.tz || undefined);
+  const key = String(day);
+  if (key === lastIconDay) return;
+  lastIconDay = key;
+  const url = dateFaviconUrl(day);
   faviconLink.href = url;
   mockIcon.src = url;
 }
