@@ -17,7 +17,7 @@ else — the preview, the settings UI — exists to serve that.
 - **Biome is the only dev dependency**, pinned to an exact version. Do not add
   others. If you need a tool once, install it outside the repo (see
   `.vibepod/README.md` for Playwright).
-- **Node 22+** (`.nvmrc`; `mise.toml` pins the same for mise users). Tests use `node:test` and `node:assert/strict`.
+- **Node 22+**, pinned exactly in `mise.toml`, which CI installs from too. Tests use `node:test` and `node:assert/strict`.
 - **Relative paths only** in `web/`. The site is published under
   `/datetimetab/` on GitHub Pages, so `/app.js` would 404 there. `task build`
   rejects root-absolute references.
@@ -53,15 +53,15 @@ tests should take an explicit `Date` rather than reading the clock.
 ## Keeping things in step
 
 These are duplicated on purpose and must move together. `test/docs.test.mjs`
-fails when the Biome, prek, token and URL-parameter pairs drift apart, so a
-Dependabot bump of Biome needs the `biome.jsonc` `$schema` bumped in the same PR:
+fails when the Biome, task/prek, token and URL-parameter pairs drift apart.
+Renovate groups each pair into one PR (see `renovate.json`); a hand edit has
+to do the same:
 
 - **Biome version**: `package.json` and the `$schema` URL in `biome.jsonc`.
-  Dependabot bumps the former only.
-- **Toolchain in `mise.toml`**: Node matches `.nvmrc`, task and prek match
-  `.vibepod/overlay/aqua.yaml` and `PREK_VERSION` in `ci.yml`.
-- **prek version**: `PREK_VERSION` in `.github/workflows/ci.yml` and
-  `.vibepod/overlay/aqua.yaml`.
+- **task and prek**: `mise.toml` and `.vibepod/overlay/aqua.yaml`.
+- **Actions**: pinned to commit SHAs with the tag in a comment.
+- **CI job names** (`check`, `overlay`) are required status checks on `main`;
+  renaming one means updating branch protection, or automerge waits forever.
 - **Service worker asset list**: a new file in `web/` must be added to
   `ASSETS` in `web/sw.js`; `test/pwa.test.mjs` fails until it is.
 - **Test command**: `package.json`, `Taskfile.yml`, `.pre-commit-config.yaml`

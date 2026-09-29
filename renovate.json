@@ -1,0 +1,65 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    "helpers:pinGitHubActionDigests",
+    "github>aquaproj/aqua-renovate-config:file#2.13.0(\\.vibepod/overlay/aqua\\.yaml)"
+  ],
+  "minimumReleaseAge": "3 days",
+  "internalChecksFilter": "strict",
+  "pre-commit": {
+    "enabled": true
+  },
+  "packageRules": [
+    {
+      "description": "The page ships with zero dependencies, so everything here is dev tooling, CI or the vibepod overlay, and CI (lint, tests, site build, hooks, overlay build) exercises all of it. Non-major updates merge once every required check is green on an up-to-date branch.",
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "automerge": true
+    },
+    {
+      "description": "The Pages actions only run after a merge; no pull request exercises them, so a green CI says nothing about them. Keep a human in the loop. A pin changes nothing and may still merge.",
+      "matchPackageNames": ["actions/configure-pages", "actions/upload-pages-artifact", "actions/deploy-pages"],
+      "matchUpdateTypes": ["minor", "patch", "digest"],
+      "automerge": false
+    },
+    {
+      "description": "Biome's version lives in package.json and in the biome.jsonc $schema URL; test/docs.test.mjs fails unless both move together.",
+      "matchPackageNames": ["@biomejs/biome", "biomejs/biome"],
+      "groupName": "biome"
+    },
+    {
+      "description": "task and prek are pinned in mise.toml (CI, contributors) and in the vibepod overlay; test/docs.test.mjs fails unless they move together.",
+      "matchPackageNames": ["go-task/task", "aqua:go-task/task"],
+      "groupName": "task"
+    },
+    {
+      "description": "See the task rule.",
+      "matchPackageNames": ["j178/prek", "aqua:j178/prek"],
+      "groupName": "prek"
+    },
+    {
+      "description": "Keep mise in step between the two workflows.",
+      "matchPackageNames": ["jdx/mise"],
+      "groupName": "mise"
+    }
+  ],
+  "customManagers": [
+    {
+      "description": "The `# renovate:` annotated aqua version in the overlay Dockerfile. (mise-action's `version:` input needs no help: the github-actions manager reads it.)",
+      "customType": "regex",
+      "managerFilePatterns": ["/^\\.vibepod/overlay/Dockerfile$/"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+ARG \\w+=(?<currentValue>\\S+)"
+      ],
+      "extractVersionTemplate": "^v?(?<version>.+)$"
+    },
+    {
+      "description": "The Biome JSON schema URL, versioned like the npm package.",
+      "customType": "regex",
+      "managerFilePatterns": ["/^biome\\.jsonc$/"],
+      "matchStrings": ["biomejs\\.dev/schemas/(?<currentValue>[^/]+)/schema\\.json"],
+      "depNameTemplate": "@biomejs/biome",
+      "datasourceTemplate": "npm"
+    }
+  ]
+}
