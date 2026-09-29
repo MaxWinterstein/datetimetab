@@ -83,10 +83,12 @@ or focused again. Formats without seconds are unaffected in practice.
 
 You need [Node 22+](https://nodejs.org), [go-task](https://taskfile.dev) and
 [prek](https://github.com/j178/prek) (git hooks; `task check` runs them too,
-and CI does). Without prek, `task setup` and `task check` warn and skip the
-hooks.
+and CI does). With [mise](https://mise.jdx.dev), `mise install` gets all
+three at the pinned versions from `mise.toml`. Without prek, `task setup` and
+`task check` warn and skip the hooks.
 
 ```sh
+mise trust && mise install   # once: Node, task, prek (or install them yourself)
 task setup    # npm install + git hooks
 task serve    # http://localhost:8080 straight from web/ — edit, reload
 ```

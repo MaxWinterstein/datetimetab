@@ -1,0 +1,10 @@
+# Toolchain for `mise install` (https://mise.jdx.dev). mise ignores .nvmrc
+# unless told to read it, so without this file a mise-managed `node` shim has
+# nothing to point at and every task fails with "node is not a valid shim".
+#
+# Versions are kept in step with .nvmrc (CI's Node), ci.yml's PREK_VERSION
+# and .vibepod/overlay/aqua.yaml by test/docs.test.mjs.
+[tools]
+node = "22"
+"aqua:go-task/task" = "3.53.1"
+"aqua:j178/prek" = "0.5.3"

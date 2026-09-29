@@ -17,7 +17,7 @@ else — the preview, the settings UI — exists to serve that.
 - **Biome is the only dev dependency**, pinned to an exact version. Do not add
   others. If you need a tool once, install it outside the repo (see
   `.vibepod/README.md` for Playwright).
-- **Node 22+** (`.nvmrc`). Tests use `node:test` and `node:assert/strict`.
+- **Node 22+** (`.nvmrc`; `mise.toml` pins the same for mise users). Tests use `node:test` and `node:assert/strict`.
 - **Relative paths only** in `web/`. The site is published under
   `/datetime-tab/` on GitHub Pages, so `/app.js` would 404 there. `task build`
   rejects root-absolute references.
@@ -58,6 +58,8 @@ Dependabot bump of Biome needs the `biome.jsonc` `$schema` bumped in the same PR
 
 - **Biome version**: `package.json` and the `$schema` URL in `biome.jsonc`.
   Dependabot bumps the former only.
+- **Toolchain in `mise.toml`**: Node matches `.nvmrc`, task and prek match
+  `.vibepod/overlay/aqua.yaml` and `PREK_VERSION` in `ci.yml`.
 - **prek version**: `PREK_VERSION` in `.github/workflows/ci.yml` and
   `.vibepod/overlay/aqua.yaml`.
 - **Service worker asset list**: a new file in `web/` must be added to

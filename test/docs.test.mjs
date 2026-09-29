@@ -65,3 +65,21 @@ test('CI and the vibepod overlay install the same prek', async () => {
   assert.ok(ci && aqua, 'could not find the prek version in ci.yml or aqua.yaml');
   assert.equal(ci, aqua);
 });
+
+test('mise.toml pins the same Node, task and prek as .nvmrc, CI and the overlay', async () => {
+  const [mise, nvmrc, ci, aqua] = await Promise.all([
+    read('mise.toml'),
+    read('.nvmrc'),
+    read('.github/workflows/ci.yml'),
+    read('.vibepod/overlay/aqua.yaml'),
+  ]);
+  assert.equal(mise.match(/^node = "([^"]+)"/m)?.[1], nvmrc.trim());
+  assert.equal(
+    `v${mise.match(/"aqua:j178\/prek" = "([^"]+)"/)?.[1]}`,
+    ci.match(/PREK_VERSION: (v[\d.]+)/)?.[1],
+  );
+  assert.equal(
+    mise.match(/"aqua:go-task\/task" = "([^"]+)"/)?.[1],
+    aqua.match(/go-task\/task@v([\d.]+)/)?.[1],
+  );
+});
