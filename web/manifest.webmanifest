@@ -1,0 +1,11 @@
+{
+  "name": "datetime-tab",
+  "short_name": "datetime-tab",
+  "description": "Today's date and time in your tab title. No extension, just a bookmark.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3eee4",
+  "theme_color": "#f3eee4",
+  "icons": [{ "src": "./favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

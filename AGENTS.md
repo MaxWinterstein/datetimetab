@@ -30,6 +30,7 @@ else — the preview, the settings UI — exists to serve that.
 | --------------------- | ------------------------------------------------------------ |
 | `web/`                | the site; the static root                                    |
 | `web/format.js`       | pure formatting logic — **no DOM access**, so tests import it |
+| `web/sw.js`           | service worker (offline, install); `ASSETS` lists every file  |
 | `test/*.test.mjs`     | tests, run with `node --test "test/*.test.mjs"`              |
 | `tools/build-web.mjs` | copies `web/` to `dist/`, verifies every local reference     |
 | `tools/serve.mjs`     | zero-dependency static server on :8080 (`web/` or `dist/`)   |
@@ -59,6 +60,8 @@ Dependabot bump of Biome needs the `biome.jsonc` `$schema` bumped in the same PR
   Dependabot bumps the former only.
 - **prek version**: `PREK_VERSION` in `.github/workflows/ci.yml` and
   `.vibepod/overlay/aqua.yaml`.
+- **Service worker asset list**: a new file in `web/` must be added to
+  `ASSETS` in `web/sw.js`; `test/pwa.test.mjs` fails until it is.
 - **Test command**: `package.json`, `Taskfile.yml`, `.pre-commit-config.yaml`
   and `ci.yml` all run `node --test "test/*.test.mjs"`.
 - **URL parameters and tokens**: `parseSettings()` / `TOKENS` in

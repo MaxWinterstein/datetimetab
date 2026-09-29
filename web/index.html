@@ -8,20 +8,23 @@
       GitHub Pages cannot set response headers, so the policy lives here.
       Nothing is fetched at run time: no fonts, no CDN, no analytics -- the
       policy makes that enforced rather than merely promised. img-src allows
-      data: because the live favicon is a generated SVG data URL.
+      data: because the live favicon is a generated SVG data URL; manifest-src
+      is needed for the install-as-app manifest (default-src 'none' covers it
+      otherwise).
     -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'"
+      content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; manifest-src 'self'; base-uri 'none'; form-action 'none'"
     />
     <title>datetime-tab</title>
     <meta
       name="description"
-      content="Put the current date and time in your browser tab title. Pick a format, bookmark the tab, done."
+      content="Today’s date and time, live in your browser tab title. No extension, just a bookmark: pick a format, pin the tab, done. Works offline."
     />
     <meta name="theme-color" content="#f3eee4" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#131417" media="(prefers-color-scheme: dark)" />
     <link rel="icon" id="favicon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="./manifest.webmanifest" />
     <link rel="stylesheet" href="./style.css" />
     <script type="module" src="./app.js"></script>
   </head>
@@ -33,7 +36,7 @@
           <img src="./favicon.svg" alt="" width="28" height="28" />
           <span>datetime-tab</span>
         </h1>
-        <p class="tagline">Today’s <em>date</em> and time, right where you already look: <em>the tab title</em>.</p>
+        <p class="tagline">Today’s <em>date</em> and time in your tab title. No extension, just a bookmark.</p>
       </header>
 
       <main>
@@ -193,6 +196,12 @@
 
         <section class="panel panel--note" aria-labelledby="note-heading">
           <h2 id="note-heading">Good to know</h2>
+          <p>
+            Nothing to install. Bookmark this page or pin the tab; <strong>Copy link</strong> puts your
+            format in the address, so the bookmark is the whole setup and you can share it. Pinned
+            tabs hide the title, which is why the icon shows today’s date. Prefer a window of its
+            own? Your browser can install datetime-tab as an app, and it then works offline too.
+          </p>
           <p>
             Browsers slow down timers in background tabs to save battery. datetime-tab keeps its timer in
             a background worker, which most browsers throttle far less, but a title with seconds can

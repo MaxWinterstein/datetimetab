@@ -497,3 +497,12 @@ el('mock-url').textContent = location.host
   ? `${location.host}${location.pathname}`
   : 'datetime-tab';
 tick();
+
+/*
+ * Offline copy and install-as-app. Only offered in a secure context (https or
+ * localhost), where the API exists; a failure changes nothing about the clock,
+ * so it is not worth surfacing.
+ */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}

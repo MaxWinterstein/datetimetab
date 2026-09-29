@@ -1,14 +1,19 @@
 # datetime-tab
 
 Today's **date** and time in your browser **tab title**, live, in whatever
-format you like. Most tab clocks only show the time; datetime-tab puts the
-weekday, date and even the ISO week number up there too. Pin the tab and
-you never have to wonder what day it is.
+format you like. **No extension, just a bookmark.**
+
+Clock websites put only the time in the tab title; the few tools that show the
+date too are browser extensions. datetime-tab is a plain web page: pick a
+format, and the link carries it, so a bookmark or pinned tab is the whole
+setup, and you can send it to someone else. Pinned tabs hide the title, so
+the tab icon shows today's date as well.
 
 ### → [maxwinterstein.github.io/datetime-tab](https://maxwinterstein.github.io/datetime-tab/)
 
-A single static page: no framework, no build step, no tracking, no cookies.
-Your settings stay in your browser.
+A single static page: no framework, no build step, no tracking, no cookies,
+no ads. Your settings stay in your browser. Install it as an app and it works
+offline.
 
 ## Features
 
@@ -23,9 +28,11 @@ Your settings stay in your browser.
   time zone), so even a pinned tab with no title text still shows the date.
 - **Remembers your choice** in `localStorage` and can be **shared as a link**
   (*Copy link*); *Reset* returns to the defaults.
-- **Keeps running without a network** once open — nothing is fetched after
-  the first load. (There is no service worker, so a *reload* needs the
-  network.)
+- **Works offline and installs as an app** — a small service worker
+  (`web/sw.js`) keeps a copy of the page, so bookmarks and pinned tabs load
+  without a network. It is network-first: online you always get the latest
+  deploy, the cache is only the fallback. Your browser's *Install* option
+  gives datetime-tab a window of its own.
 
 ### Format tokens
 
