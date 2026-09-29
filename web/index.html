@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <!--
+      GitHub Pages cannot set response headers, so the policy lives here.
+      Nothing is fetched at run time: no fonts, no CDN, no analytics -- the
+      policy makes that enforced rather than merely promised. img-src allows
+      data: because the live favicon is a generated SVG data URL.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'"
+    />
+    <title>tabclock</title>
+    <meta
+      name="description"
+      content="Put the current date and time in your browser tab title. Pick a format, bookmark the tab, done."
+    />
+    <meta name="theme-color" content="#f3eee4" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#131417" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" id="favicon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./style.css" />
+    <script type="module" src="./app.js"></script>
+  </head>
+  <body>
+    <a class="skip" href="#settings">Skip to settings</a>
+    <div class="page">
+      <header class="masthead">
+        <h1 class="brand">
+          <img src="./favicon.svg" alt="" width="28" height="28" />
+          <span>tabclock</span>
+        </h1>
+        <p class="tagline">The time, right where you already look: <em>the tab title</em>.</p>
+      </header>
+
+      <main>
+        <section class="stage" aria-labelledby="stage-heading">
+          <h2 id="stage-heading" class="visually-hidden">Live preview</h2>
+
+          <!-- Decorative mock of a browser tab strip; the real thing is your own tab. -->
+          <div class="browser" aria-hidden="true">
+            <div class="tabstrip">
+              <div class="tab tab--ghost">
+                <span class="tab-icon tab-icon--blank"></span>
+                <span class="tab-title">Inbox (3)</span>
+              </div>
+              <div class="tab tab--active" id="mock-tab">
+                <img class="tab-icon" id="mock-icon" src="./favicon.svg" alt="" width="16" height="16" />
+                <span class="tab-title" id="mock-title">tabclock</span>
+                <span class="tab-close">×</span>
+              </div>
+              <div class="tab tab--ghost">
+                <span class="tab-icon tab-icon--blank"></span>
+                <span class="tab-title">Quarterly planning — Docs</span>
+              </div>
+              <span class="tab-new">+</span>
+            </div>
+            <div class="omnibar"><span class="omnibar-url" id="mock-url">tabclock</span></div>
+          </div>
+
+          <!--
+            role="timer" carries an implicit aria-live="off": the value is
+            available on demand but a screen reader is not interrupted every
+            second, which a polite live region here would do.
+          -->
+          <p class="clock" id="clock" role="timer" aria-label="Current tab title">&nbsp;</p>
+          <p class="meta">
+            <span id="char-count"></span>
+            <span id="trunc-hint" class="trunc-hint" hidden>
+              Your tab may cut this off — put the important part first.
+            </span>
+          </p>
+          <noscript>
+            <p class="noscript">tabclock needs JavaScript to keep the title ticking.</p>
+          </noscript>
+        </section>
+
+        <section class="panel" id="settings" aria-labelledby="settings-heading">
+          <h2 id="settings-heading">Format</h2>
+          <form id="form" autocomplete="off" novalidate>
+            <fieldset class="presets">
+              <legend>Preset</legend>
+              <div class="preset-list" id="preset-list"></div>
+            </fieldset>
+
+            <div class="field field--wide">
+              <label for="format">Custom format</label>
+              <input
+                id="format"
+                name="format"
+                type="text"
+                spellcheck="false"
+                autocapitalize="off"
+                aria-describedby="format-help format-note"
+              />
+              <p class="help" id="format-help">
+                Shows the pattern in use. Typing here switches to <strong>Custom</strong>. Tokens
+                are listed below; wrap plain words in brackets, e.g. <code>[Week] W</code>.
+              </p>
+              <p class="note" id="format-note" hidden></p>
+            </div>
+
+            <div class="grid">
+              <div class="field">
+                <label for="locale">Language</label>
+                <input
+                  id="locale"
+                  name="locale"
+                  type="text"
+                  list="locale-list"
+                  placeholder="Browser default"
+                  spellcheck="false"
+                  autocapitalize="off"
+                  aria-errormessage="locale-error"
+                />
+                <datalist id="locale-list"></datalist>
+                <p class="error" id="locale-error" hidden>Not a language tag — try en-GB or de.</p>
+              </div>
+
+              <div class="field">
+                <label for="tz">Time zone</label>
+                <input
+                  id="tz"
+                  name="tz"
+                  type="text"
+                  list="tz-list"
+                  placeholder="Browser default"
+                  spellcheck="false"
+                  autocapitalize="off"
+                  aria-errormessage="tz-error"
+                />
+                <datalist id="tz-list"></datalist>
+                <p class="error" id="tz-error" hidden>Unknown time zone — try Europe/Berlin.</p>
+              </div>
+
+              <fieldset class="field segmented" id="clock-fieldset" aria-describedby="clock-help">
+                <legend>Clock</legend>
+                <div class="segments">
+                  <label><input type="radio" name="clock" value="auto" /><span>Auto</span></label>
+                  <label><input type="radio" name="clock" value="24" /><span>24 h</span></label>
+                  <label><input type="radio" name="clock" value="12" /><span>12 h</span></label>
+                </div>
+                <p class="help" id="clock-help" hidden>Not used by this format.</p>
+              </fieldset>
+
+              <div class="field field--check">
+                <label class="check">
+                  <input type="checkbox" name="seconds" id="seconds" aria-describedby="seconds-help" />
+                  <span>Show seconds</span>
+                </label>
+                <p class="help" id="seconds-help">Adds seconds to the preset.</p>
+              </div>
+
+              <div class="field">
+                <label for="prefix">Before</label>
+                <input id="prefix" name="prefix" type="text" maxlength="24" placeholder="e.g. ⏰" />
+              </div>
+
+              <div class="field">
+                <label for="suffix">After</label>
+                <input id="suffix" name="suffix" type="text" maxlength="24" placeholder="e.g. Berlin" />
+              </div>
+            </div>
+          </form>
+
+          <div class="actions">
+            <button type="button" class="button button--primary" id="copy">Copy link</button>
+            <button type="button" class="button" id="reset">Reset</button>
+            <p class="status" id="status" role="status" aria-live="polite"></p>
+          </div>
+          <p class="help">
+            The link carries your settings — bookmark it or pin the tab. Settings are also kept in
+            this browser.
+          </p>
+        </section>
+
+        <section class="panel" id="tokens" aria-labelledby="tokens-heading">
+          <h2 id="tokens-heading">Tokens</h2>
+          <table class="tokens">
+            <thead>
+              <tr>
+                <th scope="col">Token</th>
+                <th scope="col">Meaning</th>
+                <th scope="col">Right now</th>
+              </tr>
+            </thead>
+            <tbody id="token-rows"></tbody>
+          </table>
+        </section>
+
+        <section class="panel panel--note" aria-labelledby="note-heading">
+          <h2 id="note-heading">Good to know</h2>
+          <p>
+            Browsers slow down timers in background tabs to save battery. tabclock keeps its timer in
+            a background worker, which most browsers throttle far less, but a title with seconds can
+            still lag in a long-hidden tab until you look at it again. Formats without seconds are
+            barely affected.
+          </p>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <p>
+          Runs entirely in your browser — no cookies, no trackers, nothing sent anywhere.
+          <a href="https://github.com/MaxWinterstein/tabclock">Source</a> · MIT
+        </p>
+      </footer>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,646 @@
+/*
+ * Warm paper and ink with one vermilion accent -- a desk clock, not a
+ * dashboard. System font stacks only: the CSP forbids fetching fonts, and a
+ * clock should render instantly.
+ */
+:root {
+  --paper: #f3eee4;
+  --card: #fbf8f2;
+  --ink: #1b1a17;
+  /* 5.3:1 on --paper, 5.8:1 on --card: body-text contrast, not decoration. */
+  --muted: #5f5a50;
+  --line: #d8cfbf;
+  /* Control outlines must reach 3:1 (WCAG 1.4.11) against both --paper and
+     --card; --line is too faint for that and stays for decorative rules. */
+  --control-border: #857c6c;
+  --strip: #e3dacb;
+  --accent: #c43d17;
+  --accent-ink: #ffffff;
+  --accent-soft: #f6dccf;
+  --danger: #a61b1b;
+  --focus: #1f5fd1;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --shadow: 0 1px 0 rgb(27 26 23 / 6%), 0 18px 40px -24px rgb(27 26 23 / 35%);
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #131417;
+    --card: #1b1c20;
+    --ink: #ece6da;
+    --muted: #a8a194;
+    --line: #2e3036;
+    --control-border: #6b6f78;
+    --strip: #0c0d0f;
+    --accent: #ff8052;
+    --accent-ink: #1b0d07;
+    --accent-soft: #3a1d12;
+    --danger: #ff8a8a;
+    --focus: #7fb0ff;
+    --shadow: 0 1px 0 rgb(0 0 0 / 40%), 0 20px 44px -24px rgb(0 0 0 / 80%);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* `hidden` is only display:none in the UA sheet; author display rules beat it. */
+[hidden] {
+  /* biome-ignore lint/complexity/noImportantStyles: must beat every author display rule */
+  display: none !important;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px / 1.55 var(--sans);
+}
+
+.page {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: clamp(1rem, 4vw, 2.5rem) clamp(1rem, 4vw, 2rem) 3rem;
+}
+
+a {
+  color: var(--accent);
+  text-underline-offset: 0.18em;
+}
+
+code {
+  font-family: var(--mono);
+  font-size: 0.92em;
+  background: var(--accent-soft);
+  border-radius: 4px;
+  padding: 0.05em 0.3em;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 0.5rem 0.9rem;
+  border-radius: var(--radius-sm);
+  z-index: 1;
+}
+
+.skip:focus {
+  top: 1rem;
+}
+
+/* ---------------------------------------------------------------- header */
+
+.masthead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0;
+  font: 600 1.6rem / 1 var(--serif);
+  letter-spacing: -0.01em;
+}
+
+.brand img {
+  align-self: center;
+}
+
+.tagline {
+  margin: 0;
+  color: var(--muted);
+  font-family: var(--serif);
+  font-size: 1.1rem;
+}
+
+.tagline em {
+  color: var(--ink);
+}
+
+/* ----------------------------------------------------------------- stage */
+
+.stage {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  /* The clock sizes itself against this width (cqi). */
+  container-type: inline-size;
+  margin-bottom: 1.5rem;
+}
+
+.browser {
+  background: var(--strip);
+  border-bottom: 1px solid var(--line);
+  user-select: none;
+}
+
+.tabstrip {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 0.55rem 0.75rem 0;
+  overflow: hidden;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  height: 2.25rem;
+  padding: 0 0.75rem;
+  border-radius: 10px 10px 0 0;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.tab--ghost {
+  flex: 0 1 9rem;
+  color: var(--muted);
+  opacity: 0.8;
+}
+
+/* Hide the neighbour tabs on phones; the active one is what matters. */
+@media (max-width: 34rem) {
+  .tab--ghost:last-of-type {
+    display: none;
+  }
+}
+
+.tab--active {
+  /* Roughly the width a desktop browser gives a tab when a handful are open. */
+  flex: 0 1 15rem;
+  background: var(--card);
+  color: var(--ink);
+  position: relative;
+}
+
+.tab-icon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+
+.tab-icon--blank {
+  border-radius: 50%;
+  background: var(--line);
+}
+
+.tab-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: clip;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Chromium fades a long title out rather than using an ellipsis; mimic that. */
+.tab--active.is-truncated .tab-title {
+  mask-image: linear-gradient(to right, #000 calc(100% - 1.75rem), transparent);
+}
+
+.tab-close {
+  flex: none;
+  color: var(--muted);
+}
+
+.tab-new {
+  align-self: center;
+  padding: 0 0.6rem 0.4rem;
+  color: var(--muted);
+}
+
+.omnibar {
+  background: var(--card);
+  padding: 0.35rem 0.75rem 0.6rem;
+}
+
+.omnibar-url {
+  display: block;
+  background: var(--paper);
+  border-radius: 999px;
+  padding: 0.3rem 0.9rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.clock {
+  margin: 0;
+  padding: clamp(1.75rem, 6vw, 3.25rem) clamp(1rem, 4vw, 2rem) 0.5rem;
+  /* Sized from the title length (--len, set by app.js) so a short clock stays
+     big and a long ISO or custom title still fits one line; a mono glyph is
+     ~0.6em wide. cqi is the card's width, see container-type below. */
+  font:
+    500 clamp(1.1rem, min(6.5vw, calc(92cqi / (var(--len, 20) * 0.6))), 4.25rem) / 1.1 var(--mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem 1rem;
+  margin: 0;
+  padding: 0 1rem clamp(1.25rem, 4vw, 2rem);
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.trunc-hint {
+  color: var(--accent);
+}
+
+.noscript {
+  text-align: center;
+  padding: 0 1rem 1.5rem;
+}
+
+/* ---------------------------------------------------------------- panels */
+
+.panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: clamp(1rem, 3vw, 1.75rem);
+  margin-bottom: 1.5rem;
+}
+
+.panel--note {
+  background: transparent;
+}
+
+h2 {
+  margin: 0 0 1rem;
+  font: 600 1.35rem / 1.2 var(--serif);
+}
+
+fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+legend,
+.field > label:not(.check) {
+  display: block;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 0.4rem;
+  padding: 0;
+}
+
+.presets {
+  margin-bottom: 1.25rem;
+}
+
+.preset-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 0.5rem;
+}
+
+.preset {
+  position: relative;
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.7rem 0.85rem 0.7rem 2.3rem;
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  background: var(--paper);
+}
+
+.preset:hover {
+  border-color: var(--muted);
+}
+
+.preset:has(input:checked) {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+  background: var(--card);
+}
+
+.preset:has(input:focus-visible) {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* The card already carries the ring; a second one on the radio is noise. */
+.preset input:focus-visible {
+  outline: none;
+}
+
+.preset input {
+  position: absolute;
+  left: 0.85rem;
+  top: 0.95rem;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.preset-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.preset-sample {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.field {
+  min-width: 0;
+}
+
+.field--wide {
+  margin-bottom: 1.25rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 1.25rem 1.5rem;
+}
+
+input[type="text"] {
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  background: var(--paper);
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.75rem;
+}
+
+#format {
+  font-family: var(--mono);
+}
+
+input[type="text"]:hover {
+  border-color: var(--muted);
+}
+
+input[type="text"]:focus-visible {
+  outline-offset: 0;
+  border-color: var(--focus);
+}
+
+input[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+
+/* No opacity: "Browser default" explains what an empty field means, so it
+   needs full text contrast (--muted is 5.3:1). Firefox dims placeholders by
+   default, hence the explicit 1. */
+input::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
+.help {
+  margin: 0.4rem 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.error {
+  margin: 0.4rem 0 0;
+  color: var(--danger);
+  font-size: 0.85rem;
+}
+
+/* Not an error -- the title still works -- but worth reading. */
+.note {
+  margin: 0.4rem 0 0;
+  padding: 0.4rem 0.6rem;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: 0.85rem;
+}
+
+.segments {
+  display: inline-flex;
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--paper);
+}
+
+.segments label {
+  position: relative;
+  cursor: pointer;
+}
+
+.segments label + label {
+  border-left: 1px solid var(--control-border);
+}
+
+/* Visually hidden but still focusable and operable with the arrow keys. */
+.segments input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.segments span {
+  display: block;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+.segments input:checked + span {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.segments input:focus-visible + span {
+  outline: 3px solid var(--focus);
+  outline-offset: -3px;
+}
+
+.field--check {
+  align-self: end;
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+/* Controls that have no effect on the current format are disabled rather
+   than left to toggle visibly nothing. */
+.check:has(input:disabled),
+fieldset:disabled .segments {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+fieldset:disabled .segments label,
+fieldset:disabled .segments input {
+  cursor: not-allowed;
+}
+
+.check input {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+/* --------------------------------------------------------------- actions */
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+}
+
+.button {
+  font: 600 0.95rem / 1 var(--sans);
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.7rem 1.2rem;
+  cursor: pointer;
+}
+
+.button:hover {
+  border-color: var(--ink);
+}
+
+.button--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.button--primary:hover {
+  border-color: var(--accent);
+  filter: brightness(1.08);
+}
+
+.status {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* ---------------------------------------------------------------- tokens */
+
+.tokens {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.tokens th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0 0.75rem 0.5rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.tokens td {
+  padding: 0.45rem 0.75rem 0.45rem 0;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.tokens tr:last-child td {
+  border-bottom: 0;
+}
+
+.token-example {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 30rem) {
+  .tokens th:nth-child(3),
+  .tokens td:nth-child(3) {
+    display: none;
+  }
+}
+
+/* ---------------------------------------------------------------- footer */
+
+.footer {
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .preset,
+  .button,
+  input[type="text"] {
+    transition:
+      border-color 120ms ease,
+      background-color 120ms ease,
+      filter 120ms ease;
+  }
+}

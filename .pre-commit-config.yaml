@@ -1,0 +1,46 @@
+# Managed with prek (https://github.com/j178/prek), a drop-in replacement for
+# pre-commit. Install the hooks with `task hooks` (or `task setup`).
+
+repos:
+  - repo: local
+    hooks:
+      # The Biome pinned in package.json, called directly rather than through
+      # npx: npx would happily download a different version if node_modules is
+      # missing, and silent version drift is worse than a clear failure.
+      # Selected by extension alone: prek has no `jsonc` tag and does not treat
+      # .jsonc as json, so a tag-based filter would skip biome.jsonc.
+      - id: biome
+        name: biome check
+        # The guard turns a bare ENOENT on a fresh clone into an instruction.
+        # Without it the first thing a new contributor sees is an opaque
+        # "No such file or directory", whose obvious workaround is
+        # `git commit --no-verify` -- which skips every other hook too.
+        entry: >-
+          sh -c 'test -x node_modules/.bin/biome || { echo "biome is not installed, run task setup"; exit 1; };
+          exec node_modules/.bin/biome check --no-errors-on-unmatched "$@"' --
+        language: system
+        files: \.(js|mjs|cjs|css|json|jsonc|html)$
+        pass_filenames: true
+
+      # The whole suite, once, whenever any JavaScript changes. It takes well
+      # under a second, and a commit that breaks the formatter is exactly the
+      # kind that looks too small to need a test run.
+      - id: tests
+        name: node --test
+        entry: node --test "test/*.test.mjs"
+        language: system
+        files: \.(js|mjs)$
+        pass_filenames: false
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-merge-conflict
+      - id: check-yaml
+      # check-json selects on the `json` tag, which never matches .jsonc --
+      # biome.jsonc is validated by the biome hook above.
+      - id: check-json
+      - id: check-added-large-files
+        args: [--maxkb=256]

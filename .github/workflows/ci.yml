@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  # Never cancel a run on main: Pages deploys only after CI on main succeeds,
+  # so a cancelled run there means a merged commit that never ships.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  # Must match j178/prek@... in .vibepod/overlay/aqua.yaml (test/docs.test.mjs
+  # enforces it). Dependabot updates neither, so bump both, and the checksum,
+  # together. The checksum is of prek-x86_64-unknown-linux-gnu.tar.gz.
+  PREK_VERSION: v0.5.3
+  PREK_SHA256: c1475ddc56df0003c780557d9b52273d9eb19c9ef8d91143f3ce03511182a36e
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Nothing here pushes; do not leave the token lying in .git/config
+          # for npm install scripts or hooks to find.
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7
+        with:
+          # Single source of truth, so bumping .nvmrc cannot leave CI behind.
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint and format check
+        run: npx biome ci .
+
+      - name: Tests
+        run: node --test "test/*.test.mjs"
+
+      # The site build verifies every relative import, href and src in dist/
+      # resolves, which a plain copy step cannot: a missing module 404s and
+      # kills the whole page while leaving CI green.
+      - name: Site builds and its links resolve
+        run: node tools/build-web.mjs
+
+      # Everything the local hooks enforce -- YAML validity, merge markers,
+      # oversized files, whitespace. Without this, those only ever run on
+      # machines that happen to have prek installed.
+      # Pinned checksum, not the release's own .sha256: a file fetched from the
+      # same place as the tarball guards against corruption, not tampering.
+      - name: Install prek
+        run: |
+          curl -fsSL --retry 3 -o /tmp/prek.tar.gz \
+            "https://github.com/j178/prek/releases/download/${PREK_VERSION}/prek-x86_64-unknown-linux-gnu.tar.gz"
+          echo "${PREK_SHA256}  /tmp/prek.tar.gz" | sha256sum -c -
+          sudo tar -xzf /tmp/prek.tar.gz -C /usr/local/bin --strip-components=1
+          prek --version
+
+      - name: Hooks
+        run: prek run --all-files --show-diff-on-failure

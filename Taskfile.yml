@@ -1,0 +1,108 @@
+version: '3'
+
+# tabclock: the current date and time in your browser tab title.
+#
+# Everything here runs on plain Node 22+ and npm. The only dev dependency is
+# Biome; the site itself has none and ships exactly what is in web/.
+#
+# Commands are written as block sequences rather than [flow, style]: a `{` is
+# the start of a flow mapping in YAML, so `{{.CLI_ARGS}}` inside brackets is a
+# parse error. Descriptions containing `:` or `-` followed by a space are
+# quoted for the same reason -- YAML would otherwise read them as a mapping.
+
+tasks:
+  default:
+    desc: Show available tasks
+    silent: true
+    cmds:
+      - task --list
+
+  setup:
+    desc: Install dev dependencies and git hooks
+    cmds:
+      - node --version
+      - npm install
+      # prek is optional, but say so out loud. Swallowing the failure would
+      # let `task setup` report success having installed no hooks at all.
+      # silent: otherwise task echoes the whole if/else script around the
+      # warning it is supposed to make stand out.
+      - silent: true
+        cmd: |
+          if command -v prek >/dev/null 2>&1; then
+            prek install
+          else
+            echo
+            echo "  !! prek is not installed, so NO git hooks were set up."
+            echo "  !! Lint and tests will not run before your commits."
+            echo "  !! Install it: https://github.com/j178/prek  (then: task hooks)"
+            echo
+          fi
+
+  hooks:
+    desc: Install the prek git hooks (https://github.com/j178/prek)
+    cmds:
+      - prek install
+
+  hooks:run:
+    desc: Run every hook against every file, not just staged ones
+    cmds:
+      - prek run --all-files
+
+  test:
+    desc: Run the test suite
+    cmds:
+      - node --test "test/*.test.mjs"
+
+  test:watch:
+    desc: Re-run the tests whenever a file changes
+    cmds:
+      - node --test --watch "test/*.test.mjs"
+
+  fmt:
+    desc: Format everything (and apply safe lint fixes)
+    cmds:
+      - node_modules/.bin/biome check --write .
+
+  lint:
+    desc: Lint and check formatting without writing
+    cmds:
+      - node_modules/.bin/biome check .
+
+  check:
+    desc: 'Everything CI runs - lint, tests, site build, hooks'
+    # Sequential rather than `deps`, which run in parallel and interleave their
+    # output. `build` is here because CI runs it: without it, breaking the site
+    # build would pass locally and fail in CI.
+    cmds:
+      - task: lint
+      - task: test
+      - task: build
+      - silent: true
+        cmd: |
+          if command -v prek >/dev/null 2>&1; then
+            prek run --all-files
+          else
+            echo "  !! prek not installed, skipping hooks (CI will still run them)"
+          fi
+
+  build:
+    desc: Assemble the static site into dist/ and verify its links resolve
+    cmds:
+      - node tools/build-web.mjs
+
+  serve:
+    desc: 'Serve web/ as-is at http://localhost:8080 - edit, then reload'
+    cmds:
+      - node tools/serve.mjs web
+
+  web:
+    desc: 'Build and serve dist/ at http://localhost:8080 - exactly what Pages gets'
+    deps:
+      - build
+    cmds:
+      - node tools/serve.mjs dist
+
+  clean:
+    desc: Remove build output and dependencies
+    cmds:
+      - rm -rf dist node_modules

@@ -1,0 +1,68 @@
+name: Deploy to GitHub Pages
+
+# Triggers on CI *completing*, not on push: deploying straight from a push
+# would publish a broken build at the same moment CI went red. The build job
+# below refuses to run unless that CI run succeeded.
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+# Never cancel a running deployment; queue behind it instead.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    # Only publish what CI has already passed, and only for a push to this
+    # repository. `branches: [main]` above matches the triggering run's head
+    # branch -- which a pull request from a fork whose branch happens to be
+    # called "main" also has, and its head_sha is the fork's commit.
+    # workflow_dispatch has no originating run, so allow it through explicitly.
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_repository.full_name == github.repository)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # workflow_run checks out the default branch head by default, which
+          # may already be newer than the commit CI just passed. Pin to it.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          # Read-only job; the token has no reason to stay in .git/config.
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+
+      # No npm ci: the build is plain Node and needs no dependencies.
+      - run: node tools/build-web.mjs
+
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    # Scoped to this job: the build job runs repository code and has no
+    # business holding deploy credentials.
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
