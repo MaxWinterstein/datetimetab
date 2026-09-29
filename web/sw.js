@@ -39,23 +39,46 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(self.clients.claim());
 });
 
+/*
+ * Every link to the page is the same file -- the settings live in the query
+ * string -- so navigations are cached under one key without it. Keyed by the
+ * full URL instead, each shared link kept its own copy, and an offline open
+ * could get the oldest one next to this deploy's scripts.
+ */
+function cacheKey(request) {
+  if (request.mode !== 'navigate') return request;
+  const url = new URL(request.url);
+  url.search = '';
+  url.hash = '';
+  return url.href;
+}
+
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return;
+  const key = cacheKey(request);
+  const cached = () => caches.match(key);
   event.respondWith(
-    fetch(request)
-      .then((response) => {
-        // Refresh the offline copy with whatever the network just served.
+    fetch(request).then(
+      (response) => {
         if (response.ok) {
+          // Refresh the offline copy with whatever the network just served;
+          // waitUntil so the worker is not stopped halfway through the write.
           const copy = response.clone();
-          caches.open(CACHE).then((cache) => cache.put(request, copy));
+          event.waitUntil(
+            caches
+              .open(CACHE)
+              .then((cache) => cache.put(key, copy))
+              .catch(() => {}),
+          );
+          return response;
         }
+        // The server is up but failing (a Pages outage, a deploy hiccup): the
+        // copy we have beats an error page. A 404 is an answer, not a failure.
+        if (response.status >= 500) return cached().then((hit) => hit ?? response);
         return response;
-      })
-      // ignoreSearch: a shared link like ./?preset=iso is the same page; the
-      // settings live in the query string, not in a different file.
-      .catch(() =>
-        caches.match(request, { ignoreSearch: true }).then((hit) => hit ?? Response.error()),
-      ),
+      },
+      () => cached().then((hit) => hit ?? Response.error()),
+    ),
   );
 });

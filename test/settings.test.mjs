@@ -10,6 +10,8 @@ import {
   formatOptions,
   formatTitle,
   isValidTimeZone,
+  MAX_AFFIX,
+  MAX_FORMAT,
   PRESETS,
   parseSettings,
   resolvePattern,
@@ -341,4 +343,24 @@ describe('formatTitle', () => {
     });
     assert.equal(formatOptions({ ...base, clock: '24' }).hour12, false);
   });
+});
+
+test('invisible bidi and zero-width characters are stripped, emoji joiners kept', () => {
+  // U+202E would reverse the whole title for anyone opening the link.
+  const s = parseSettings(
+    new URLSearchParams({ prefix: '\u202Eabc\u200B', suffix: '\u{1F469}\u200D\u{1F4BB}' }),
+  );
+  assert.equal(s.prefix, 'abc');
+  assert.equal(s.suffix, '\u{1F469}\u200D\u{1F4BB}');
+});
+
+test('index.html caps inputs at the lengths parseSettings keeps', async () => {
+  // Otherwise the field shows more than the title and the link carry.
+  const { readFile } = await import('node:fs/promises');
+  const html = await readFile(new URL('../web/index.html', import.meta.url), 'utf8');
+  const cap = (id) =>
+    Number(html.match(new RegExp(`id="${id}"[^>]*?maxlength="(\\d+)"`, 's'))?.[1]);
+  assert.equal(cap('format'), MAX_FORMAT);
+  assert.equal(cap('prefix'), MAX_AFFIX);
+  assert.equal(cap('suffix'), MAX_AFFIX);
 });

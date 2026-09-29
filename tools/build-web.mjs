@@ -10,7 +10,7 @@
  * run it against fixtures: a regex that silently stops matching would leave
  * this safety net green while catching nothing.
  */
-import { existsSync, statSync } from 'node:fs';
+import { existsSync, lstatSync, statSync } from 'node:fs';
 import { cp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -87,6 +87,20 @@ export async function findUnresolved(dir) {
   return { missing, checked, files };
 }
 
+/**
+ * Symlinks under `dir`. The build refuses them: copied dereferenced, a link
+ * to a file outside the repository publishes that file; copied as a link, it
+ * dangles on Pages. Nothing in web/ needs one.
+ * @param {string | URL} dir
+ * @returns {Promise<string[]>}
+ */
+export async function findSymlinks(dir) {
+  const path = dir instanceof URL ? fileURLToPath(dir) : String(dir);
+  const rootUrl = pathToFileURL(path.endsWith('/') ? path : `${path}/`);
+  const entries = await readdir(rootUrl, { recursive: true });
+  return entries.filter((f) => lstatSync(new URL(f, rootUrl)).isSymbolicLink());
+}
+
 async function build() {
   const root = new URL('../', import.meta.url);
   const web = new URL('web/', root);
@@ -97,13 +111,19 @@ async function build() {
     process.exit(1);
   }
 
-  await rm(dist, { recursive: true, force: true });
-  // dereference: a symlink in web/ pointing outside the tree would otherwise
-  // be copied as a link, and GitHub Pages would publish a dangling one.
-  await cp(web, dist, { recursive: true, dereference: true });
+  const links = await findSymlinks(web);
+  if (links.length) {
+    console.error('symlinks in web/ are not allowed (replace them with the real file):');
+    for (const l of links) console.error(`  ${l}`);
+    process.exit(1);
+  }
 
-  // Without this, GitHub Pages runs the output through Jekyll, which drops
-  // files and directories whose names begin with an underscore.
+  await rm(dist, { recursive: true, force: true });
+  await cp(web, dist, { recursive: true });
+
+  // Insurance only: the Actions-based Pages deploy does not run Jekyll. If
+  // Pages is ever switched to "Deploy from a branch", Jekyll would drop files
+  // and directories whose names begin with an underscore.
   await writeFile(new URL('.nojekyll', dist), '');
 
   const { missing, checked, files } = await findUnresolved(dist);

@@ -7,12 +7,12 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { findUnresolved } from '../tools/build-web.mjs';
+import { findSymlinks, findUnresolved } from '../tools/build-web.mjs';
 
 const dirs = [];
 after(() => Promise.all(dirs.map((d) => rm(d, { recursive: true, force: true }))));
@@ -90,4 +90,15 @@ test('the real build succeeds and writes .nojekyll', () => {
   assert.equal(result.status, 0, result.stderr);
   assert.ok(existsSync(new URL('../dist/.nojekyll', import.meta.url)));
   assert.ok(existsSync(new URL('../dist/tick-worker.js', import.meta.url)));
+});
+
+test('symlinks are found, however deep', async () => {
+  // A link to a file outside the repository would otherwise be published.
+  const dir = await fixture({ 'index.html': '', 'sub/a.js': '' });
+  await symlink('/etc/hostname', join(dir, 'sub', 'leak.txt'));
+  assert.deepEqual(await findSymlinks(dir), [join('sub', 'leak.txt')]);
+});
+
+test('the real web/ has no symlinks', async () => {
+  assert.deepEqual(await findSymlinks(new URL('../web/', import.meta.url)), []);
 });

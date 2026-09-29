@@ -55,6 +55,11 @@ const TYPES = {
 };
 
 const server = createServer(async (req, res) => {
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    res.writeHead(405, { allow: 'GET, HEAD', 'content-type': 'text/plain; charset=utf-8' });
+    res.end('method not allowed\n');
+    return;
+  }
   try {
     // Strip the query string and refuse anything trying to climb out of ROOT.
     const rel = normalize(decodeURIComponent(req.url.split('?')[0])).replace(/^(\.\.[/\\])+/, '');
@@ -81,6 +86,15 @@ const server = createServer(async (req, res) => {
     res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });
     res.end('not found\n');
   }
+});
+// Without this, a busy port ends in a raw EADDRINUSE stack trace.
+server.on('error', (error) => {
+  console.error(
+    error.code === 'EADDRINUSE'
+      ? `port ${PORT} on ${HOST} is already in use -- stop the other server or set PORT=...`
+      : `could not start the server: ${error.message}`,
+  );
+  process.exit(2);
 });
 server.listen(PORT, HOST, () => {
   console.log(`serving ${ROOT}`);

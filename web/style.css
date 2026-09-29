@@ -192,8 +192,8 @@ code {
 
 .tab--ghost {
   flex: 0 1 9rem;
+  /* Muted colour alone: an extra opacity pushed these under 4.5:1 contrast. */
   color: var(--muted);
-  opacity: 0.8;
 }
 
 /* Hide the neighbour tabs on phones; the active one is what matters. */
@@ -204,8 +204,11 @@ code {
 }
 
 .tab--active {
-  /* Roughly the width a desktop browser gives a tab when a handful are open. */
-  flex: 0 1 15rem;
+  /* Roughly the width a desktop browser gives a tab when a handful are open.
+     Measured in this page's monospace, which is wider than a browser's tab
+     font: at 15rem the default 23-character title already faded out, and the
+     first thing a visitor saw was a truncation warning about the default. */
+  flex: 0 1 17.5rem;
   background: var(--card);
   color: var(--ink);
   position: relative;

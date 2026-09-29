@@ -22,7 +22,24 @@
 const formatters = new Map();
 const MAX_FORMATTERS = 256;
 
+/*
+ * "Your own zone" has to be resolved when formatting, not once: a formatter
+ * built without a timeZone freezes the zone of that moment, so a pinned tab
+ * would keep the old time after travel or an OS zone change -- and formatters
+ * built later would use the new one, mixing two zones in one title. Resolving
+ * costs a formatter construction, hence at most once a second.
+ */
+let defaultZone = { at: Number.NEGATIVE_INFINITY, tz: '' };
+function currentDefaultZone() {
+  const now = Date.now();
+  if (now - defaultZone.at >= 1000) {
+    defaultZone = { at: now, tz: new Intl.DateTimeFormat().resolvedOptions().timeZone };
+  }
+  return defaultZone.tz;
+}
+
 function dtf(locale, options) {
+  if (options.timeZone === undefined) options = { ...options, timeZone: currentDefaultZone() };
   const key = `${locale || ''}|${JSON.stringify(options)}`;
   let f = formatters.get(key);
   if (!f) {
@@ -335,8 +352,10 @@ export const DEFAULTS = Object.freeze({
 
 export const SETTING_KEYS = Object.freeze(Object.keys(DEFAULTS));
 
-const MAX_FORMAT = 200;
-const MAX_AFFIX = 24;
+// Exported so index.html's maxlength can be checked against them: a longer
+// value would be cut here while the field kept showing all of it.
+export const MAX_FORMAT = 200;
+export const MAX_AFFIX = 24;
 
 /** True if `tz` is an IANA zone (or alias) this runtime accepts. */
 export function isValidTimeZone(tz) {
@@ -364,10 +383,14 @@ export const isValidLocale = (locale) => canonicalLocale(locale) !== null;
 
 /*
  * Control characters (including newlines) have no business in a tab title
- * and can come in through a hand-edited URL.
+ * and can come in through a hand-edited URL. Neither do invisible bidi
+ * overrides and zero-width marks, which let a shared link reverse or hide
+ * parts of the title. ZWJ and ZWNJ (U+200C/D) stay: emoji sequences and
+ * several scripts need them.
  */
-// biome-ignore lint/suspicious/noControlCharactersInRegex: stripping them is the point
-const CONTROL = /[\u0000-\u001f\u007f-\u009f]/g;
+const CONTROL =
+  // biome-ignore lint/suspicious/noControlCharactersInRegex: stripping them is the point
+  /[\u0000-\u001f\u007f-\u009f\u200b\u200e\u200f\u202a-\u202e\u2060-\u2064\u2066-\u2069\ufeff]/g;
 const clean = (s, max) => [...s.replace(CONTROL, '').trim()].slice(0, max).join('');
 
 // Null prototype, so `seconds=constructor` or `seconds=__proto__` cannot

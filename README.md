@@ -60,7 +60,7 @@ tokens. The page lists every token with a live example.
 | `locale`  | a BCP 47 language tag; empty = browser default              | `?locale=de-DE`       |
 | `tz`      | an IANA time zone; empty = your own                         | `?tz=Asia/Tokyo`      |
 | `clock`   | `auto` `12` `24`                                            | `?clock=24`           |
-| `seconds` | `1` or `0`                                                  | `?seconds=0`          |
+| `seconds` | `1` or `0` (also `true`/`false`, `yes`/`no`, `on`/`off`)   | `?seconds=0`          |
 | `prefix`  | text before the time (up to 24 chars)                       | `?prefix=Berlin`      |
 | `suffix`  | text after the time (up to 24 chars)                        | `?suffix=(UTC)`       |
 

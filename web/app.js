@@ -109,7 +109,12 @@ function updateUrl(settings) {
   // replaceState, not pushState: every keystroke in the format field would
   // otherwise become a Back-button step.
   const url = `${location.pathname}${query ? `?${query}` : ''}${location.hash}`;
-  history.replaceState(null, '', url);
+  try {
+    history.replaceState(null, '', url);
+  } catch {
+    // Safari throws after 100 calls in 30 s. The debounce in onChange keeps
+    // typing well under that; if it still happens, the next change retries.
+  }
 }
 
 let settings = resolveSettings(new URLSearchParams(location.search), loadStored());
@@ -193,6 +198,9 @@ function showPattern() {
 function syncControls() {
   const active = controlsInEffect(settings);
   form.elements.seconds.disabled = !active.seconds;
+  // A greyed-out tick still reads as "seconds on". Show it unticked while it
+  // does nothing; settings.seconds keeps the user's choice for when it does.
+  form.elements.seconds.checked = active.seconds && settings.seconds;
   clockFieldset.disabled = !active.clock;
   clockHelp.hidden = active.clock;
   if (active.seconds) secondsHelp.textContent = 'Adds seconds to the preset.';
@@ -256,7 +264,9 @@ function readForm(changed) {
       // preset pattern the field was displaying.
       format: custom && !presetPicked ? f.format.value : settings.format,
       clock: f.clock.value,
-      seconds: f.seconds.checked ? '1' : '0',
+      // A disabled box is shown unticked (see syncControls) and says nothing
+      // about the user's choice; keep the stored one until it applies again.
+      seconds: (f.seconds.disabled ? settings.seconds : f.seconds.checked) ? '1' : '0',
       prefix: f.prefix.value,
       suffix: f.suffix.value,
     }),
@@ -421,11 +431,16 @@ window.addEventListener('focus', tick);
 /* Events                                                                    */
 /* ------------------------------------------------------------------------ */
 
+let urlTimer = 0;
+
 function onChange(event) {
   readForm(event.target);
   saveStored(settings);
-  updateUrl(settings);
+  // Title first, so nothing that goes wrong below can hold it back.
   tick();
+  // Debounced: one history entry rewrite per pause in typing, not per key.
+  clearTimeout(urlTimer);
+  urlTimer = setTimeout(() => updateUrl(settings), 250);
 }
 
 form.addEventListener('input', onChange);
@@ -462,6 +477,10 @@ function announce(message) {
 }
 
 el('copy').addEventListener('click', async () => {
+  // The address bar lags a quarter second behind typing (see onChange); copy
+  // what is on screen, not what was there before the last keystroke.
+  clearTimeout(urlTimer);
+  updateUrl(settings);
   const href = location.href;
   try {
     await navigator.clipboard.writeText(href);
@@ -476,6 +495,7 @@ el('copy').addEventListener('click', async () => {
 el('reset').addEventListener('click', () => {
   settings = { ...DEFAULTS };
   saveStored(settings);
+  clearTimeout(urlTimer);
   updateUrl(settings);
   writeForm();
   tick();

@@ -299,3 +299,23 @@ describe('error and fallback contracts', () => {
     assert.equal(localeUses12h('de-DE'), false);
   });
 });
+
+test('"your own zone" follows a change of the system zone', async () => {
+  // A pinned tab outlives trips and OS zone changes. The default zone used to
+  // be frozen into cached formatters, so the title kept the old time -- and
+  // formatters created later used the new one, mixing zones in one title.
+  const previous = process.env.TZ;
+  const at = new Date('2026-06-01T12:00:00Z');
+  try {
+    process.env.TZ = 'Europe/Berlin';
+    await new Promise((r) => setTimeout(r, 1_050));
+    assert.equal(formatDate(at, 'HH:mm Z', {}), '14:00 +02:00');
+    process.env.TZ = 'Asia/Tokyo';
+    // The default zone is re-resolved at most once a second.
+    await new Promise((r) => setTimeout(r, 1_050));
+    assert.equal(formatDate(at, 'HH:mm Z', {}), '21:00 +09:00');
+  } finally {
+    if (previous === undefined) delete process.env.TZ;
+    else process.env.TZ = previous;
+  }
+});

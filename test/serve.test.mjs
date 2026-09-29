@@ -76,3 +76,22 @@ test('refuses to leave the served directory', async () => {
 test('unknown files are a 404', async () => {
   assert.equal((await get('/nope.js')).status, 404);
 });
+
+test('only GET and HEAD are served', async () => {
+  const res = await fetch(`${origin}/`, { method: 'POST' });
+  assert.equal(res.status, 405);
+  assert.equal(res.headers.get('allow'), 'GET, HEAD');
+});
+
+test('a busy port is a one-line message, not a stack trace', async () => {
+  const port = origin.split(':').pop();
+  const { spawnSync } = await import('node:child_process');
+  const r = spawnSync(process.execPath, [SERVE, 'web'], {
+    env: { ...process.env, PORT: port, HOST: '127.0.0.1' },
+    encoding: 'utf8',
+    timeout: 10_000,
+  });
+  assert.equal(r.status, 2);
+  assert.match(r.stderr, /already in use/);
+  assert.doesNotMatch(r.stderr, /\n\s+at /);
+});
