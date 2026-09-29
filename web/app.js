@@ -25,11 +25,11 @@ import {
   wallClock,
 } from './format.js';
 
-const STORAGE_KEY = 'tabclock:settings';
+const STORAGE_KEY = 'datetime-tab:settings';
 
 /* What the tab shows if a format renders to nothing ("[]", only spaces). An
    empty document.title makes the browser show the URL instead. */
-const FALLBACK_TITLE = 'tabclock';
+const FALLBACK_TITLE = 'datetime-tab';
 
 /*
  * Chromium and Firefox show roughly this many characters of a title in a
@@ -491,5 +491,7 @@ writeForm();
 // Normalise the URL (drop invalid or default values) so "Copy link" hands out
 // exactly the settings in effect. Storage is left alone -- see saveStored().
 updateUrl(settings);
-el('mock-url').textContent = location.host ? `${location.host}${location.pathname}` : 'tabclock';
+el('mock-url').textContent = location.host
+  ? `${location.host}${location.pathname}`
+  : 'datetime-tab';
 tick();

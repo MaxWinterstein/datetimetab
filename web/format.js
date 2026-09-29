@@ -1,5 +1,5 @@
 /**
- * Formatting and settings logic for tabclock.
+ * Formatting and settings logic for datetime-tab.
  *
  * Deliberately pure: no DOM, no globals beyond Intl, so the whole thing can be
  * imported by `node --test` and exercised with fixed Date instances. Every
@@ -289,7 +289,7 @@ const clockPart = (seconds, h12) =>
 export const PRESETS = Object.freeze([
   {
     id: 'clock',
-    label: 'Weekday clock',
+    label: 'Date and time',
     build: ({ seconds, h12 }) => `ddd D MMM · ${clockPart(seconds, h12)}`,
   },
   { id: 'time', label: 'Time only', build: ({ seconds, h12 }) => clockPart(seconds, h12) },

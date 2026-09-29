@@ -17,7 +17,7 @@ export function clockFaviconSvg(hours, minutes, colors = {}) {
   const hourAngle = ((hours % 12) + minutes / 60) * 30;
   const minuteAngle = minutes * 6;
   return [
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><title>tabclock</title>',
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><title>datetime-tab</title>',
     `<circle cx="16" cy="16" r="14" fill="${face}" stroke="${ink}" stroke-width="3"/>`,
     `<g stroke="${ink}" stroke-width="3" stroke-linecap="round">`,
     `<line x1="16" y1="16" x2="16" y2="9" transform="rotate(${hourAngle.toFixed(1)} 16 16)"/>`,

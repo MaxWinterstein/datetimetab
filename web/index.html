@@ -14,7 +14,7 @@
       http-equiv="Content-Security-Policy"
       content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'"
     />
-    <title>tabclock</title>
+    <title>datetime-tab</title>
     <meta
       name="description"
       content="Put the current date and time in your browser tab title. Pick a format, bookmark the tab, done."
@@ -31,9 +31,9 @@
       <header class="masthead">
         <h1 class="brand">
           <img src="./favicon.svg" alt="" width="28" height="28" />
-          <span>tabclock</span>
+          <span>datetime-tab</span>
         </h1>
-        <p class="tagline">The time, right where you already look: <em>the tab title</em>.</p>
+        <p class="tagline">Today’s <em>date</em> and time, right where you already look: <em>the tab title</em>.</p>
       </header>
 
       <main>
@@ -49,7 +49,7 @@
               </div>
               <div class="tab tab--active" id="mock-tab">
                 <img class="tab-icon" id="mock-icon" src="./favicon.svg" alt="" width="16" height="16" />
-                <span class="tab-title" id="mock-title">tabclock</span>
+                <span class="tab-title" id="mock-title">datetime-tab</span>
                 <span class="tab-close">×</span>
               </div>
               <div class="tab tab--ghost">
@@ -58,7 +58,7 @@
               </div>
               <span class="tab-new">+</span>
             </div>
-            <div class="omnibar"><span class="omnibar-url" id="mock-url">tabclock</span></div>
+            <div class="omnibar"><span class="omnibar-url" id="mock-url">datetime-tab</span></div>
           </div>
 
           <!--
@@ -74,7 +74,7 @@
             </span>
           </p>
           <noscript>
-            <p class="noscript">tabclock needs JavaScript to keep the title ticking.</p>
+            <p class="noscript">datetime-tab needs JavaScript to keep the title ticking.</p>
           </noscript>
         </section>
 
@@ -194,7 +194,7 @@
         <section class="panel panel--note" aria-labelledby="note-heading">
           <h2 id="note-heading">Good to know</h2>
           <p>
-            Browsers slow down timers in background tabs to save battery. tabclock keeps its timer in
+            Browsers slow down timers in background tabs to save battery. datetime-tab keeps its timer in
             a background worker, which most browsers throttle far less, but a title with seconds can
             still lag in a long-hidden tab until you look at it again. Formats without seconds are
             barely affected.
@@ -205,7 +205,7 @@
       <footer class="footer">
         <p>
           Runs entirely in your browser — no cookies, no trackers, nothing sent anywhere.
-          <a href="https://github.com/MaxWinterstein/tabclock">Source</a> · MIT
+          <a href="https://github.com/MaxWinterstein/datetime-tab">Source</a> · MIT
         </p>
       </footer>
     </div>

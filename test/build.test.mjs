@@ -18,7 +18,7 @@ const dirs = [];
 after(() => Promise.all(dirs.map((d) => rm(d, { recursive: true, force: true }))));
 
 async function fixture(files) {
-  const dir = await mkdtemp(join(tmpdir(), 'tabclock-build-'));
+  const dir = await mkdtemp(join(tmpdir(), 'datetime-tab-build-'));
   dirs.push(dir);
   for (const [name, content] of Object.entries(files)) {
     const path = join(dir, name);

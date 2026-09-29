@@ -1,6 +1,6 @@
 version: '3'
 
-# tabclock: the current date and time in your browser tab title.
+# datetime-tab: the current date and time in your browser tab title.
 #
 # Everything here runs on plain Node 22+ and npm. The only dev dependency is
 # Biome; the site itself has none and ships exactly what is in web/.

@@ -1,5 +1,5 @@
 {
-  "name": "tabclock",
+  "name": "datetime-tab",
   "version": "0.1.0",
   "private": true,
   "description": "The current date and time in your browser tab title, in whatever format you like",
@@ -8,7 +8,7 @@
   "author": "Max Winterstein",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MaxWinterstein/tabclock.git"
+    "url": "git+https://github.com/MaxWinterstein/datetime-tab.git"
   },
   "engines": {
     "node": ">=22"

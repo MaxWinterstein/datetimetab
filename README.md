@@ -1,10 +1,11 @@
-# tabclock
+# datetime-tab
 
-The current date and time in your browser **tab title** — live, in whatever
-format you like. Pin the tab and you have a clock in your tab bar
-that never needs a glance at the taskbar.
+Today's **date** and time in your browser **tab title**, live, in whatever
+format you like. Most tab clocks only show the time; datetime-tab puts the
+weekday, date and even the ISO week number up there too. Pin the tab and
+you never have to wonder what day it is.
 
-### → [maxwinterstein.github.io/tabclock](https://maxwinterstein.github.io/tabclock/)
+### → [maxwinterstein.github.io/datetime-tab](https://maxwinterstein.github.io/datetime-tab/)
 
 A single static page: no framework, no build step, no tracking, no cookies.
 Your settings stay in your browser.
@@ -64,7 +65,7 @@ page does.
 ## Background tabs
 
 Browsers throttle timers in background tabs — Chrome batches them to once a
-minute after five minutes hidden. tabclock therefore keeps its wake-up timer in
+minute after five minutes hidden. datetime-tab therefore keeps its wake-up timer in
 a small Web Worker (`web/tick-worker.js`), whose timers are not subject to that
 throttling, and falls back to a normal timer where workers are unavailable. If
 a browser still delays it, the page catches up as soon as the tab is visible

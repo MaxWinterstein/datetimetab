@@ -52,7 +52,7 @@ test('serves index.html for / and modules as JavaScript', async () => {
   const index = await get('/');
   assert.equal(index.status, 200);
   assert.match(index.type, /^text\/html/);
-  assert.match(index.body, /<title>tabclock<\/title>/);
+  assert.match(index.body, /<title>datetime-tab<\/title>/);
   const app = await get('/app.js?v=1');
   assert.equal(app.status, 200);
   assert.match(app.type, /^text\/javascript/);

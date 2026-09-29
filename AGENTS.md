@@ -4,7 +4,7 @@ Notes for anyone — human or agent — working in this repository.
 
 ## What this is
 
-`tabclock` is a static web page whose job is to keep the current date and time
+`datetime-tab` is a static web page whose job is to keep the current date and time
 in the browser tab title (`document.title`), in a user-chosen format. Everything
 else — the preview, the settings UI — exists to serve that.
 
@@ -19,7 +19,7 @@ else — the preview, the settings UI — exists to serve that.
   `.vibepod/README.md` for Playwright).
 - **Node 22+** (`.nvmrc`). Tests use `node:test` and `node:assert/strict`.
 - **Relative paths only** in `web/`. The site is published under
-  `/tabclock/` on GitHub Pages, so `/app.js` would 404 there. `task build`
+  `/datetime-tab/` on GitHub Pages, so `/app.js` would 404 there. `task build`
   rejects root-absolute references.
 - **Comments explain why**, not what. If a decision was not obvious, write
   down the reason next to it.
