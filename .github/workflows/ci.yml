@@ -14,28 +14,25 @@ concurrency:
   # so a cancelled run there means a merged commit that never ships.
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
-env:
-  # Must match j178/prek@... in .vibepod/overlay/aqua.yaml (test/docs.test.mjs
-  # enforces it). Dependabot updates neither, so bump both, and the checksum,
-  # together. The checksum is of prek-x86_64-unknown-linux-gnu.tar.gz.
-  PREK_VERSION: v0.5.3
-  PREK_SHA256: c1475ddc56df0003c780557d9b52273d9eb19c9ef8d91143f3ce03511182a36e
-
+# Both job names are required status checks on main (branch protection), and
+# Renovate automerges only when every required check is green. Renaming a job
+# means updating the protection rule too, or automerge waits forever.
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # Nothing here pushes; do not leave the token lying in .git/config
           # for npm install scripts or hooks to find.
           persist-credentials: false
 
-      - uses: actions/setup-node@v7
+      # Node, task and prek at exactly the versions in mise.toml, the same file
+      # a contributor installs from -- one pin per tool instead of a copy here
+      # that updates had to find. mise verifies the aqua downloads' checksums.
+      - uses: jdx/mise-action@9149ea85001c7435d5a66bb127d6a1b6227cb0a5 # v5.0.0
         with:
-          # Single source of truth, so bumping .nvmrc cannot leave CI behind.
-          node-version-file: .nvmrc
-          cache: npm
+          version: 2026.9.16
 
       - run: npm ci
 
@@ -54,15 +51,27 @@ jobs:
       # Everything the local hooks enforce -- YAML validity, merge markers,
       # oversized files, whitespace. Without this, those only ever run on
       # machines that happen to have prek installed.
-      # Pinned checksum, not the release's own .sha256: a file fetched from the
-      # same place as the tarball guards against corruption, not tampering.
-      - name: Install prek
-        run: |
-          curl -fsSL --retry 3 -o /tmp/prek.tar.gz \
-            "https://github.com/j178/prek/releases/download/${PREK_VERSION}/prek-x86_64-unknown-linux-gnu.tar.gz"
-          echo "${PREK_SHA256}  /tmp/prek.tar.gz" | sha256sum -c -
-          sudo tar -xzf /tmp/prek.tar.gz -C /usr/local/bin --strip-components=1
-          prek --version
-
       - name: Hooks
         run: prek run --all-files --show-diff-on-failure
+
+  # The vibepod overlay pins its own copies of gh, task and prek, and nothing
+  # else ever builds it: without this job an automerged bump there would only
+  # be found broken on the next pod start. The overlay is a FROM-less fragment
+  # appended to VibePod's agent image, so it is built here on the Debian
+  # release that image uses, with the two things the fragment expects.
+  overlay:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Build the overlay and run every tool it installs
+        run: |
+          {
+            echo 'FROM debian:bookworm-slim'
+            echo 'RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates && rm -rf /var/lib/apt/lists/*'
+            cat .vibepod/overlay/Dockerfile
+          } > "$RUNNER_TEMP/Dockerfile"
+          docker build -f "$RUNNER_TEMP/Dockerfile" -t overlay .vibepod/overlay
+          docker run --rm overlay sh -c 'set -eux; gh --version; task --version; prek --version; chromium --headless --no-sandbox --disable-gpu --dump-dom "data:text/html,<title>ok</title>" | grep -q "<title>ok</title>"'

@@ -66,5 +66,7 @@ uvx vibepod run claude --rebuild-overlay   # force a rebuild
 uvx vibepod run claude --no-overlay        # start from the plain base image
 ```
 
-Keep the prek version in `aqua.yaml` and `PREK_VERSION` in
-`.github/workflows/ci.yml` in step.
+Keep the task and prek versions in `aqua.yaml` and `mise.toml` in step
+(`test/docs.test.mjs` fails otherwise; Renovate updates both in one PR). CI
+builds this overlay on every pull request, so an update that breaks it never
+merges.

@@ -32,7 +32,7 @@ jobs:
       github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # workflow_run checks out the default branch head by default, which
           # may already be newer than the commit CI just passed. Pin to it.
@@ -40,15 +40,19 @@ jobs:
           # Read-only job; the token has no reason to stay in .git/config.
           persist-credentials: false
 
-      - uses: actions/setup-node@v7
+      # The Node that CI just tested with, from mise.toml.
+      - uses: jdx/mise-action@9149ea85001c7435d5a66bb127d6a1b6227cb0a5 # v5.0.0
         with:
-          node-version-file: .nvmrc
+          version: 2026.9.16
 
       # No npm ci: the build is plain Node and needs no dependencies.
       - run: node tools/build-web.mjs
 
-      - uses: actions/configure-pages@v6
-      - uses: actions/upload-pages-artifact@v5
+      # The three Pages actions only ever run here, after a merge -- no pull
+      # request exercises them, so renovate.json keeps updates to them out of
+      # automerge.
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: dist
 
@@ -65,4 +69,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v5
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

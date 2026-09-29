@@ -1,10 +1,13 @@
-# Toolchain for `mise install` (https://mise.jdx.dev). mise ignores .nvmrc
-# unless told to read it, so without this file a mise-managed `node` shim has
-# nothing to point at and every task fails with "node is not a valid shim".
+# The toolchain, for `mise install` (https://mise.jdx.dev) and for CI, which
+# installs from this same file (jdx/mise-action), so a version here is the
+# version everything runs. Exact pins on purpose: a floating "22" would let
+# CI change Node under us without a pull request; pinned, every bump is a
+# Renovate PR that has to pass CI first.
 #
-# Versions are kept in step with .nvmrc (CI's Node), ci.yml's PREK_VERSION
-# and .vibepod/overlay/aqua.yaml by test/docs.test.mjs.
+# task and prek are also pinned in .vibepod/overlay/aqua.yaml;
+# test/docs.test.mjs keeps the two in step and renovate.json updates them
+# together.
 [tools]
-node = "22"
+node = "22.23.3"
 "aqua:go-task/task" = "3.53.1"
 "aqua:j178/prek" = "0.5.3"

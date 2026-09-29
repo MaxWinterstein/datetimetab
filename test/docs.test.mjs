@@ -59,27 +59,31 @@ test('biome.jsonc $schema matches the pinned Biome version', async () => {
   );
 });
 
-test('CI and the vibepod overlay install the same prek', async () => {
-  const ci = (await read('.github/workflows/ci.yml')).match(/PREK_VERSION: (v[\d.]+)/)?.[1];
-  const aqua = (await read('.vibepod/overlay/aqua.yaml')).match(/j178\/prek@(v[\d.]+)/)?.[1];
-  assert.ok(ci && aqua, 'could not find the prek version in ci.yml or aqua.yaml');
-  assert.equal(ci, aqua);
+test('mise.toml and the vibepod overlay pin the same task and prek', async () => {
+  // CI installs from mise.toml; the overlay has its own aqua.yaml. Renovate
+  // groups the two, and this catches a hand edit that touches only one.
+  const [mise, aqua] = await Promise.all([read('mise.toml'), read('.vibepod/overlay/aqua.yaml')]);
+  for (const tool of ['go-task/task', 'j178/prek']) {
+    const pinned = mise.match(new RegExp(`"aqua:${tool}" = "([^"]+)"`))?.[1];
+    const overlay = aqua.match(new RegExp(`${tool}@v([\\d.]+)`))?.[1];
+    assert.ok(pinned && overlay, `${tool} not found in mise.toml or aqua.yaml`);
+    assert.equal(pinned, overlay, tool);
+  }
 });
 
-test('mise.toml pins the same Node, task and prek as .nvmrc, CI and the overlay', async () => {
-  const [mise, nvmrc, ci, aqua] = await Promise.all([
-    read('mise.toml'),
-    read('.nvmrc'),
-    read('.github/workflows/ci.yml'),
-    read('.vibepod/overlay/aqua.yaml'),
-  ]);
-  assert.equal(mise.match(/^node = "([^"]+)"/m)?.[1], nvmrc.trim());
-  assert.equal(
-    `v${mise.match(/"aqua:j178\/prek" = "([^"]+)"/)?.[1]}`,
-    ci.match(/PREK_VERSION: (v[\d.]+)/)?.[1],
-  );
-  assert.equal(
-    mise.match(/"aqua:go-task\/task" = "([^"]+)"/)?.[1],
-    aqua.match(/go-task\/task@v([\d.]+)/)?.[1],
-  );
+test('Node is pinned exactly, once', async () => {
+  // A range would let CI change Node without a pull request.
+  assert.match(await read('mise.toml'), /^node = "\d+\.\d+\.\d+"$/m);
+});
+
+test('every third-party action is pinned to a full commit SHA', async () => {
+  // A tag can be moved to other code after review; a SHA cannot.
+  const { readdir } = await import('node:fs/promises');
+  const dir = new URL('../.github/workflows/', import.meta.url);
+  for (const file of await readdir(dir)) {
+    const text = await readFile(new URL(file, dir), 'utf8');
+    for (const [, ref] of text.matchAll(/uses:\s*(\S+)/g)) {
+      assert.match(ref, /@[0-9a-f]{40}$/, `${file}: ${ref}`);
+    }
+  }
 });

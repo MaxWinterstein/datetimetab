@@ -11,6 +11,11 @@ the tab icon shows today's date as well.
 
 ### → [maxwinterstein.github.io/datetimetab](https://maxwinterstein.github.io/datetimetab/)
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/screenshot-dark.png">
+  <img alt="datetime-tab: a mock browser tab whose title reads “Tue 29 Sep · 8:58:29 PM” with a calendar icon showing 29, a large live clock below it, and the format presets" src=".github/screenshot-light.png">
+</picture>
+
 A single static page: no framework, no build step, no tracking, no cookies,
 no ads. Your settings stay in your browser. Install it as an app and it works
 offline.
@@ -130,6 +135,27 @@ tools/        build-web.mjs (copy + link check), serve.mjs (zero-dep server)
   plus whitespace/YAML/JSON hygiene. See `.pre-commit-config.yaml`.
 
 See [AGENTS.md](AGENTS.md) for conventions.
+
+## Dependency updates
+
+[Renovate](https://docs.renovatebot.com) keeps everything current
+(`renovate.json`), and merges non-major updates on its own once CI is green.
+That is safe here for a reason that is easy to miss: **the page itself has no
+dependencies at all.** Every update is to dev tooling, CI actions or the
+vibepod overlay, and CI exercises all of them, including a full build of the
+overlay. What keeps it honest:
+
+- Branch protection on `main` requires both CI jobs (`check`, `overlay`) to
+  pass on a branch that is **up to date with `main`**, so two updates can never
+  merge on the strength of CI runs that never saw them together.
+- A release must be **three days old** before Renovate proposes it; broken or
+  compromised releases are usually pulled within that window.
+- GitHub Actions are pinned to **commit SHAs** (a test enforces it).
+- Versions that must match (Biome in `package.json` and `biome.jsonc`; task and
+  prek in `mise.toml` and the overlay) are updated **in one PR**.
+- **Major updates**, any update to the three Pages deploy actions, which no
+  pull request can exercise, and to `gh` in the overlay, which holds GitHub
+  credentials, wait for a human.
 
 ## Deployment
 
