@@ -12,7 +12,7 @@ packages:
   # gh -- reading and merging pull requests from inside the pod.
   - name: cli/cli@v2.101.0
   # task -- `task check`, `task web`, and everything else in Taskfile.yml.
-  - name: go-task/task@v3.53.1
+  - name: go-task/task@v3.54.0
   # prek -- installs and runs the git hooks (biome, tests, whitespace, YAML).
   #   `task setup` warns loudly and carries on when this is missing, which is
   #   exactly the case where the warning is easiest to scroll past.
