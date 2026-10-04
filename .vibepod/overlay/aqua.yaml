@@ -10,7 +10,7 @@ registries:
 
 packages:
   # gh -- reading and merging pull requests from inside the pod.
-  - name: cli/cli@v2.101.0
+  - name: cli/cli@v2.102.0
   # task -- `task check`, `task web`, and everything else in Taskfile.yml.
   - name: go-task/task@v3.53.1
   # prek -- installs and runs the git hooks (biome, tests, whitespace, YAML).
