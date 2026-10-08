@@ -16,4 +16,4 @@ packages:
   # prek -- installs and runs the git hooks (biome, tests, whitespace, YAML).
   #   `task setup` warns loudly and carries on when this is missing, which is
   #   exactly the case where the warning is easiest to scroll past.
-  - name: j178/prek@v0.5.4
+  - name: j178/prek@v0.5.5
