@@ -14,7 +14,7 @@
 COPY aqua.yaml /tmp/overlay/aqua.yaml
 
 # renovate: datasource=github-releases depName=aquaproj/aqua
-ARG AQUA_VERSION=2.63.0
+ARG AQUA_VERSION=2.64.0
 
 RUN set -eux; \
     arch="$(dpkg --print-architecture)"; \
