@@ -10,4 +10,4 @@
 [tools]
 node = "24.22.0"
 "aqua:go-task/task" = "3.54.0"
-"aqua:j178/prek" = "0.5.5"
+"aqua:j178/prek" = "0.5.6"
