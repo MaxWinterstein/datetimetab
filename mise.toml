@@ -8,6 +8,6 @@
 # test/docs.test.mjs keeps the two in step and renovate.json updates them
 # together.
 [tools]
-node = "24.22.2"
+node = "26.13.0"
 "aqua:go-task/task" = "3.54.0"
 "aqua:j178/prek" = "0.5.7"
