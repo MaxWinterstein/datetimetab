@@ -30,7 +30,7 @@ jobs:
       # Node, task and prek at exactly the versions in mise.toml, the same file
       # a contributor installs from -- one pin per tool instead of a copy here
       # that updates had to find. mise verifies the aqua downloads' checksums.
-      - uses: jdx/mise-action@6be3c7ed4c21d4f76b208d351d95aac273ebb76d # v5.2.4
+      - uses: jdx/mise-action@6612f0ef07ed2a736cd1e00a94a065522dd41195 # v5.2.5
         with:
           version: 2026.10.25
 
