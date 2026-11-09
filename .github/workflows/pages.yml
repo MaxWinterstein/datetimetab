@@ -43,7 +43,7 @@ jobs:
       # The Node that CI just tested with, from mise.toml.
       - uses: jdx/mise-action@f5be966e4a917d54244728e6a5fdcd1d93a35e6c # v5.2.6
         with:
-          version: 2026.11.2
+          version: 2026.11.3
 
       # No npm ci: the build is plain Node and needs no dependencies.
       - run: node tools/build-web.mjs
